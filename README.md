@@ -1,385 +1,254 @@
-# Hiring Agent
+# Resume Forage
 
-## Plug and play — best-fit resume
+Resume Forage builds a 2-page, job-specific resume in LaTeX, scores it until it is the best honest fit for the job description, compiles a PDF, saves that PDF in its own folder, and logs the result in an Excel sheet.
 
-Clone this repo and open **this folder** as the project root in Cursor, OpenCode, Antigravity, Claude Code, Codex, or Hermes. The resume skill loads from `.agents/skills/best-fit-resume/` (adapters in `.cursor/skills/`, `.claude/skills/`, `.opencode/skills/`).
+Open this repository as the project folder in an agent (Cursor, OpenCode, Antigravity, Claude Code, Codex, or Hermes) and say:
 
-Say **“build my best-fit resume.”** The agent asks for your profile once, saves it to `.resume-memory/profile.json`, takes your template and job description, checks the role online, runs three scoring passes, writes LaTeX, and saves the PDF.
+**build my best-fit resume**
 
-```text
-resume-build/src/          LaTeX source
-resume-build/output/       compiled PDF
-resume-archive/pdf/        saved copies
-resume-tracker/resumes.xlsx   Name, Description, Yes/No, Date, Time, Role, Company, PDF, ATS
-```
+The agent follows `.agents/skills/best-fit-resume/SKILL.md`. Adapters in `.cursor/skills/`, `.claude/skills/`, and `.opencode/skills/` point at that same file, so every harness runs one workflow.
 
-One-time setup:
+## What you get
+
+- One intake pass. Every profile field is asked up front and stored so later runs do not start from zero.
+- Your template, or the built-in 2-page ATS layout.
+- A short web check of the role, the company, and current ATS practice before writing.
+- Three score-and-rewrite loops aimed at 90 or higher.
+- Human wording with generic AI phrases removed.
+- Header links for GitHub, LinkedIn, and any other URLs you gave.
+- A `.tex` file, a compiled PDF, a saved copy of that PDF, and one Excel row.
+
+The agent only uses facts you provided. It does not invent employers, dates, tools, or metrics to chase a score.
+
+## One-time setup
+
+Requirements:
+
+- Python 3.10 or newer
+- `pip`
+- A TeX install with `latexmk` or `pdflatex` (TeX Live or MiKTeX) if you want a PDF
+- A model key only if you want `score.py` to call an LLM (see below)
 
 ```bash
+git clone https://github.com/sujay119/Resumeforage.git
+cd Resumeforage
 pip install -r requirements.txt
 ```
 
-PDF compile needs TeX (`pdflatex` or `latexmk`: TeX Live or MiKTeX). Scoring with `score.py` needs the model config in `.env.example`. The skill still writes the `.tex` file and the tracker row if TeX or a model key is missing.
+Copy the model example if you want hiring-agent scoring:
 
----
+```bash
+copy .env.example .env
+```
 
-<p align="center"><strong>Resume-to-Score pipeline</strong> that extracts structured data from PDFs, enriches with GitHub signals, and outputs a fair, explainable evaluation.</p>
+On macOS or Linux use `cp .env.example .env`. Edit `.env`:
 
-<p align="center">
-  <a href="https://www.python.org/downloads/release/python-3110/">
-    <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-blue.svg">
-  </a>
-  <a href="https://github.com/interviewstreet/hiring-agent/blob/master/LICENSE">
-    <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow.svg">
-  </a>
-  <a href="https://github.com/psf/black">
-    <img alt="Code style: Black" src="https://img.shields.io/badge/code%20style-Black-000000.svg">
-  </a>
-</p>
+- `DEFAULT_MODEL` must be a model listed in `providers.json` (Ollama examples such as `gemma4:latest`, or Gemini such as `gemini-2.5-flash`).
+- `GEMINI_API_KEY` is required only when the chosen provider needs it.
 
----
+`.env` is gitignored. Do not commit it.
 
-## Contents
+If TeX is missing, the agent still writes the `.tex` file and tells you to install TeX Live or MiKTeX. It does not invent a PDF, and it does not log a tracker row until a real PDF exists.
 
-- [Context and intent](#context-and-intent)
-- [Coverage](#coverage)
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Installation and Setup](#installation-and-setup)
-  - [Prerequisites](#prerequisites)
-  - [Quick setup with pip](#quick-setup-with-pip)
-  - [Ollama models](#ollama-models)
-- [Configuration](#configuration)
-- [How it works](#how-it-works)
-- [CLI usage](#cli-usage)
-- [Directory layout](#directory-layout)
-- [Provider details](#provider-details)
-- [Contributing](#contributing)
-- [License](#license)
+If no model is configured, the agent still runs the 0–100 ATS rubric by hand and says that `score.py` was skipped.
 
----
+## How to run it
 
-## Context and intent
+Open the cloned folder as the workspace. Then use any of these:
 
-This project got a lot of attention recently, and some of the discussion surfaced misconceptions worth addressing directly.
+- build my best-fit resume
+- tailor my resume to this job description
+- update my resume memory
 
-**What this is not:**
-- Not an ATS (Applicant Tracking System)
-- Not used to screen HackerRank's open roles
-- Not a product available to HackerRank customers
+### Where each harness loads the skill
 
-**What it actually is:**
-
-Every year HackerRank receives 50,000–60,000 intern applications. No human can read that many resumes well. This tool was built to *rank* them — helping decide which resumes to read first. Resumes scoring below the cutoff are filtered out, but the cutoff is intentionally set very low so only candidates at the very bottom of the distribution are removed. The vast majority pass through to human review, where the real decisions are made.
-
-Since this was built, HackerRank has also shipped [AI Interviewer (Chakra)](https://www.hackerrank.com/products/ai-interviewer/) to automate the first round of interviews — so candidates are no longer assessed on their resume alone.
-
-**On the default model:**
-
-The repo ships with `gemma4:latest` as the default because it runs locally on most laptops without any cloud API key. Actual intern resumes at HackerRank are evaluated using a top-tier Gemini model. The repo ships with a demo config, not the production one.
-
----
-
-## Coverage
-
-Articles and discussions that have shaped how we think about improving this project:
-
-| Article | Key takeaway |
+| Harness | What it reads |
 |---|---|
-| [HackerRank open sourced its ATS. My resume scored 90/100. Oh wait 74/100. No — 88/100. Actually 83/100.](https://danunparsed.com/p/hackerrank-open-source-ats) — *Dan Kinsky* | Deep statistical analysis of score variance across 100 runs of the same resume. Isolates which categories are stable (technical skills) vs. noisy (project quality judgments). Points to LLM non-determinism as the root cause. |
-| [The Score Depends on the Roll of the Dice](https://pinggy.io/blog/hackerrank_open_source_ats_inconsistent_scoring/) — *Pinggy Blog* | Reproduces the variance findings and surfaces a security issue: invisible text embedded in PDFs can inflate scores significantly. |
-| [The Hiring Rubric Inside](https://byteiota.com/hackerrank-ats-open-source-the-hiring-rubric-inside/) — *ByteIota* | Breaks down the scoring weights and argues that a GitHub-centric rubric disadvantages engineers whose work is in private enterprise repos. Also notes the signal degradation risk as candidates optimize for the now-public rubric. |
-| [Analyzing resume scoring consistency](https://dev.to/mgobea/hackerrank-open-sourced-its-ats-analyzing-resume-scoring-consistency-1j5d) — *Mariano Gobea Alcoba, DEV Community* | Proposes concrete fixes: standardized data formats, versioned evaluation models, ensemble scoring, and explainability layers to reduce variance and make the system more robust. |
-| [AI-Powered Pipeline for Explainable Resume Scoring](https://aitoolly.com/ai-news/article/2026-06-26-interviewstreet-unveils-hiring-agent-an-ai-powered-pipeline-for-explainable-resume-scoring-and-githu) — *AIToolly* | Covers the launch and highlights the transparency argument — making scoring logic public allows scrutiny that proprietary ATS systems never face. |
-| [Hacker News discussion](https://news.ycombinator.com/item?id=48713832) | 200+ comment thread covering LLM determinism, GDPR Article 22 implications, and the broader ethics of automated resume filtering. |
+| Cursor | `.cursor/skills/best-fit-resume/SKILL.md` |
+| OpenCode | `.opencode/skills/best-fit-resume/` and `.agents/skills/` |
+| Antigravity | `.agents/skills/best-fit-resume/SKILL.md` |
+| Claude Code | `.claude/skills/best-fit-resume/SKILL.md` and `CLAUDE.md` |
+| Codex, Hermes, others | `AGENTS.md`, which points at `.agents/skills/best-fit-resume/SKILL.md` |
 
-**Video coverage**
+## The run, in order
 
-- [HackerRank Open-Sourced Their ATS?](https://www.youtube.com/shorts/0OP2bhYZQfc) — YouTube Short
-- [HackerRank Open-Sourced ATS Tool for selecting Resume](https://www.youtube.com/shorts/UnHGC1Ywhys) — YouTube Short
-- [HackerRank Custom ATS Released! Get Your Resume Score & Beat ATS Filters](https://www.youtube.com/watch?v=tQSve-xx4_8) — full walkthrough video
+The agent does not skip ahead or ask profile questions again later.
 
-**Community tools built on this repo**
+### 1. Profile, once
 
-- [Resume Reality Check](https://resume-reality-check-seven.vercel.app/) — hosted tool that lets candidates score their own resume against the same rubric
+If `.resume-memory/profile.json` is already complete, the agent summarizes it and asks only what is missing or what you want to change.
 
----
+If it is missing, the agent asks all of this in one message:
 
-## Overview
+- Full name, email, phone, location, target role
+- GitHub, LinkedIn, portfolio, and any other links (label plus URL)
+- Every job: company, title, location, dates, employment type, and 3–6 bullets with what you owned, the stack, and real metrics
+- Internships, contract, freelance, research, and teaching, in the same shape
+- Constraints (NDAs, employers you cannot name)
+- Projects: name, purpose, your role, stack, repo or demo link, outcomes, personal or open source
+- Education: school, degree, field, dates, optional GPA, coursework, honors
+- Skills you want listed, and skills that must not be claimed
+- Awards, publications, competitions, certifications, volunteer or leadership, spoken languages
+- Strongest quantified wins
+- Page limit (default 2), sections to keep or drop, tone, optional work-authorization note, filename slug
 
-Hiring Agent parses a resume PDF to Markdown, extracts sectioned JSON using a local or hosted LLM, augments the data with GitHub profile and repository signals, then produces an objective evaluation with category scores, evidence, bonus points, and deductions. You can run fully local with Ollama or use Google Gemini.
+Answers are merged into `.resume-memory/profile.json`. Filled fields are never deleted unless you explicitly clear them.
 
----
+Update later by saying **update my resume memory**, **save my profile**, or **remember this for my resume**. Lists match existing jobs and projects and update in place.
 
-## Architecture
+`profile.json` is gitignored because it holds contact details. `profile.schema.json` and `profile.example.json` are the empty shape you can look at.
 
-<table>
-<tr>
-<td>
+### 2. Template
 
-**Flow**
+The agent asks for a template: a file path, a pasted layout, or **default**.
 
-1. `pymupdf_rag.py` converts PDF pages to Markdown-like text.
-2. `pdf.py` calls the LLM per section using Jinja templates under `prompts/templates`.
-3. `github.py` fetches profile and repos, classifies projects, and asks the LLM to select the top 7.
-4. `evaluator.py` runs a strict-scored evaluation with fairness constraints.
-5. `score.py` orchestrates everything end to end and writes CSV when development mode is on.
+A provided template is followed (section order, density, fonts, margins). Otherwise it uses `.agents/skills/best-fit-resume/assets/default-2page.tex`.
 
-</td>
-<td>
+### 3. Job description, research, three loops
 
-**Key modules**
+Paste the full job description or give a file path. If the target role or company is not obvious, the agent asks for those two fields here. It does not reopen the whole profile.
 
-- `models.py`
-  Pydantic schemas and LLM provider interfaces.
+Then, before any rewrite loop, it researches the public web:
 
-- `llm_utils.py`
-  Provider initialization and response cleanup.
+- At most 3 searches and 2 page reads
+- Role plus company: title variants and skills similar listings emphasize
+- Current ATS practice: keyword placement, standard headings, measurable bullets, parseable layout
 
-- `transform.py`
-  Normalization from loose LLM JSON to JSON Resume style.
+If that harness has no web tool, it says so and continues from the job description and any pages you pasted. Research is a short note. Articles are not pasted into the chat or the resume. Keywords are added only when your profile supports them.
 
-- `prompts/`
-  All Jinja templates for extraction and scoring.
+Each of the three loops does this, in order:
 
-</td>
-</tr>
-</table>
+1. Add honest keywords from the job description and the research note. No stuffing.
+2. Score ATS fit from 0 to 100.
+3. Score with this repo when a PDF and a model are available: `python score.py <pdf> --role <role>`.
+4. Humanize the draft.
+5. Rewrite the gaps and score again.
 
----
+ATS points:
 
-## Installation and Setup
+| Part | Max |
+|---|---|
+| Keyword coverage | 30 |
+| Role clarity | 15 |
+| Evidence and metrics | 15 |
+| ATS parseability | 15 |
+| Section completeness, including header links | 10 |
+| Order and 2-page fit | 10 |
+| Human voice | 5 |
 
-### Prerequisites
+Target is **90 or higher**. After loop 3, if the score is still under 90, the agent ships the best version and lists the gaps. It does not fabricate evidence to cross 90.
 
-- **Python 3.11+**
-
-  The repository pins `.python-version` to 3.11.13.
-
-- **One LLM backend** (either of them)
-
-  - **Ollama** for local models
-    Install from the [official site](https://ollama.com/), then run `ollama serve`.
-  - **Google Gemini** if you have an API key, get it from [here](https://aistudio.google.com/api-keys).
-
-### Quick setup with pip
+The included role rubric is `roles/software_engineering_intern/`. For another job:
 
 ```bash
-$ git clone https://github.com/interviewstreet/hiring-agent
-$ cd hiring-agent
-
-$ python -m venv .venv
-# Linux or macOS
-$ source .venv/bin/activate
-# Windows
-# .venv\Scripts\activate
-
-$ pip install -r requirements.txt
+python score.py --init-role backend_engineer
 ```
 
-### Ollama Models
+Edit `roles/backend_engineer/role.json`, `criteria.jinja`, and `system_message.jinja`, then score with `--role backend_engineer`.
 
-Pull the model you want to use. For example:
+Humanize rules live in `.agents/skills/best-fit-resume/references/humanize.md`. The draft drops filler such as “results-driven,” “leveraged,” “passionate about,” and “proven track record,” and it does not hide keywords in white text or invisible characters.
+
+### 4. Additions
+
+The agent asks if you want anything added or changed, applies that, and humanizes again.
+
+### 5. Files
+
+| What | Where |
+|---|---|
+| LaTeX source | `resume-build/src/<name>.tex` |
+| Compiled PDF | `resume-build/output/<name>.pdf` |
+| Saved PDF copy | `resume-archive/pdf/<date-time>-<name>.pdf` |
+| Excel log | `resume-tracker/resumes.xlsx` |
+| Profile | `.resume-memory/profile.json` |
+
+The header shows your name, contact details, GitHub, LinkedIn, and every other link you provided. Headings stay standard (`Experience`, `Projects`, `Education`, `Skills`) so parsers can read the file. The agent compiles and checks that the PDF is 2 pages, then tightens or expands until it is.
+
+Compile (the agent runs this):
 
 ```bash
-$ ollama pull gemma4:latest
+latexmk -pdf -interaction=nonstopmode -output-directory=resume-build/output resume-build/src/<name>.tex
 ```
 
-If you want different results, you can pull other models such as:
+If `latexmk` is missing, it runs `pdflatex` twice with the same output directory.
 
-```bash
-# For higher system configuration
-$ ollama pull gemma3:12b
+On Windows, folders are created with:
 
-# For lower system configuration
-$ ollama pull gemma3:1b
+```powershell
+New-Item -ItemType Directory -Force -Path resume-build/src, resume-build/output, resume-archive/pdf
 ```
 
----
-
-## Configuration
-
-Copy the template and set your environment variables.
-
-```bash
-$ cp .env.example .env
-```
-
-**Environment variables**
-
-| Variable         | Values                                      | Description                                                            |
-| ---------------- | ------------------------------------------- | ---------------------------------------------------------------------- |
-| `DEFAULT_MODEL`  | for example `gemma4:latest` or `gemini-2.5-pro` | Model to use; must exist in `providers.json` — the provider is inferred from which provider lists it. Defaults to `default_model` in `providers.json`. |
-| `GEMINI_API_KEY` | string                                      | Required when using a Gemini model.                                   |
-| `GITHUB_TOKEN`   | optional                                    | Inherits from your shell environment, improves GitHub API rate limits. |
-
-Provider mapping lives in `providers.json` — each provider declares its `base_url`, an optional API-key env var, and per-model parameters; `config.py` loads it and resolves the provider for a model. `config.py` also has a flag:
-
-```python
-# config.py
-DEVELOPMENT_MODE = True  # enables caching and CSV export
-```
-
-You can leave it on during iteration. See the next section for details.
-
----
-
-## How it works
-
-<details>
-<summary><b>1) PDF extraction</b></summary>
-
-- `pymupdf_rag.py` and `pdf.py` read the PDF using PyMuPDF and convert pages to Markdown-like text.
-- The `to_markdown` routine handles headings, links, tables, and basic formatting.
-
-</details>
-
-<details>
-<summary><b>2) Section parsing with templates</b></summary>
-
-- `prompts/templates/*.jinja` define strict instructions for each section
-  Basics, Work, Education, Skills, Projects, Awards.
-- `pdf.PDFHandler` calls the LLM per section and assembles a `JSONResume` object (see `models.py`).
-
-</details>
-
-<details>
-<summary><b>3) GitHub enrichment</b></summary>
-
-- `github.py` extracts a username from the resume profiles, fetches profile and repos, and classifies each project.
-- It asks the LLM to select exactly 7 unique projects with a minimum author commit threshold, favoring meaningful contributions.
-
-</details>
-
-<details>
-<summary><b>4) Evaluation</b></summary>
-
-- `evaluator.py` scores the resume against the **role** selected on the command line.
-- Each role lives in `roles/<role_name>/` and defines its own scoring categories and weights in `role.json`, plus its own `criteria.jinja` and `system_message.jinja` prompts (encoding fairness and scoring rules).
-- The shipped `software_engineering_intern` role scores `open_source`, `self_projects`, `production`, and `technical_skills`, plus bonus and deductions, with evidence for each. Other roles can define entirely different categories.
-
-</details>
-
-<details>
-<summary><b>5) Output and CSV export</b></summary>
-
-- `score.py` prints a readable summary to stdout.
-- When `DEVELOPMENT_MODE=True` it creates or appends a per-role `resume_evaluations_<role>.csv` with key fields (columns follow the role's categories), and caches intermediate JSON under `cache/`.
-
-</details>
-
----
-
-## CLI usage
-
-### End to end scoring
-
-Provide a path to a resume PDF and the role to score against. `--role` is the
-name of a directory under `roles/` and is **required**.
-
-```bash
-$ python score.py ./resume/sample.pdf --role software_engineering_intern
-```
-
-What happens:
-
-1. If development mode is on, the PDF extraction result is cached to `cache/resumecache_<basename>.json`.
-2. If a GitHub profile is found in the resume, repositories are fetched and cached to `cache/githubcache_<basename>.json`.
-3. The evaluator scores the resume against the selected role, prints a report and, in development mode, appends a CSV row to `resume_evaluations_<role>.csv`.
-
-### Roles
-
-A role bundles its rubric in `roles/<role_name>/`:
+### Report you should see
 
 ```text
-roles/software_engineering_intern/
-├── role.json           # categories, weights (max), bonus_max, score bounds, position_title
-├── criteria.jinja      # evaluation criteria prompt (receives {{ text_content }})
-└── system_message.jinja
+## Resume ready
+- PDF: resume-build/output/<file>.pdf
+- Saved: resume-archive/pdf/<stamped-file>.pdf
+- TeX: resume-build/src/<file>.tex
+- Tracker: resume-tracker/resumes.xlsx row <n>
+- Pages: 2 (verified)
+- ATS/JD fit: <n>/100 (after 3 loops: L1=<a>, L2=<b>, L3=<c>)
+- Hiring-agent: <score> or skipped: <reason>
+- Research: <query topics, or no web tool — used JD only>
+- What changed: <short bullets>
+- Memory: .resume-memory/profile.json updated | unchanged
 ```
 
-`role.json` drives the scoring schema, the printed report, the CSV columns, and
-the score caps — so each role can score against its own categories and weights.
+## Excel tracker
 
-To add a role, scaffold one with basic template files and then edit them:
+The sheet is created the first time a real PDF is saved. Columns:
+
+**Name, Description, Yes/No, Date, Time, Role, Company, PDF, ATS**
+
+- **Description** is one line about what that version emphasizes, not the full job description.
+- **Yes/No** is a dropdown on the cell (`Yes` or `No`). `Yes` means you accepted that version. `No` means you rejected it. You can change it in Excel or with the command below.
+- **Date** is `YYYY-MM-DD` and **Time** is `HH:MM`, local time, filled when the row is saved.
+- **PDF** is the path under `resume-archive/pdf/`.
+- **ATS** is the score after the three loops.
+
+The agent logs with:
 
 ```bash
-$ python score.py --init-role backend_engineer
-# edit roles/backend_engineer/{role.json,criteria.jinja,system_message.jinja}
-$ python score.py ./resume/sample.pdf --role backend_engineer
+python resume-tracker/track_resume.py save --name "<person>" --description "<one line>" --decision yes --source resume-build/output/<name>.pdf --role "<target role>" --company "<target company>" --ats <score>
 ```
 
-`--init-role` creates the role directory with placeholder categories and prompts
-(it only scaffolds; it does not score a resume). You can also copy an existing
-role directory instead.
+Change a decision:
 
----
+```bash
+python resume-tracker/track_resume.py set --row <n> --decision no
+```
 
-## Directory layout
+Print the sheet:
+
+```bash
+python resume-tracker/track_resume.py list
+```
+
+`resumes.xlsx` and the PDFs under `resume-archive/pdf/` stay on your machine. They are gitignored.
+
+## Layout of this repo
 
 ```text
-.
-├── .env.example
-├── .python-version
-├── config.py
-├── evaluator.py
-├── github.py
-├── llm_utils.py
-├── models.py
-├── pdf.py
-├── prompt.py
-├── prompts/
-│   ├── template_manager.py
-│   └── templates/
-│       ├── awards.jinja
-│       ├── basics.jinja
-│       ├── education.jinja
-│       ├── github_project_selection.jinja
-│       ├── projects.jinja
-│       ├── skills.jinja
-│       ├── system_message.jinja
-│       └── work.jinja
-├── providers.json
-├── pymupdf_rag.py
-├── requirements.txt
-├── roles.py
-├── roles/
-│   └── software_engineering_intern/
-│       ├── role.json
-│       ├── criteria.jinja
-│       └── system_message.jinja
-├── score.py
-└── transform.py
+.agents/skills/best-fit-resume/     full skill, questions, rubric, humanize rules, default .tex
+.cursor/ .claude/ .opencode/        adapters that load the same skill
+.resume-memory/                     profile schema and your local profile.json
+resume-build/src/                   LaTeX
+resume-build/output/                compiled PDF
+resume-archive/pdf/                 saved PDF copies
+resume-tracker/track_resume.py      writes the Excel sheet
+resume-tracker/resumes.xlsx         created on first save
+score.py                            hiring-agent PDF scorer
+roles/                              rubrics used by score.py
+prompts/templates/                  section extraction prompts
+.env.example                        model settings
 ```
 
----
+## What is not committed
 
-## Provider details
+- `.env`
+- `.resume-memory/profile.json`
+- PDFs and `.tex` drafts
+- `resume-tracker/resumes.xlsx`
+- LaTeX build junk (`.aux`, `.log`, and similar)
 
-### Ollama
-
-- Set `DEFAULT_MODEL` to any pulled model listed in `providers.json`, for example `gemma4:latest`
-- Requests go through `models.OpenAICompatibleProvider` against Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`)
-
-### Gemini
-
-- Set `DEFAULT_MODEL` to a Gemini model listed in `providers.json`, for example `gemini-2.0-flash`
-- Provide `GEMINI_API_KEY`
-- The same `models.OpenAICompatibleProvider` wrapper is used, pointed at Gemini's OpenAI-compatible endpoint
-
----
-
-## Contributing
-
-Please read the [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines on filing issues, proposing changes, and submitting pull requests. Key principles include:
-
-- Keep prompts declarative and provider-agnostic.
-- Validate changes with a couple of real resumes under different providers.
-- Add or adjust unit-free smoke tests that call each stage with minimal inputs.
-
----
-
-
-## License
-
-[MIT](https://github.com/interviewstreet/hiring-agent/blob/master/LICENSE) © HackerRank
+Clone the repo on another machine and your personal profile, resumes, and sheet stay behind. Say **update my resume memory** on the new machine and fill the profile again, or copy `profile.json` yourself.
