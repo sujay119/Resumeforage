@@ -1,0 +1,58 @@
+% format: compact — dense 2-page ATS resume for long histories
+\documentclass[9pt,letterpaper]{article}
+
+\usepackage[margin=0.45in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{setspace}
+
+\pagestyle{empty}
+\setlist[itemize]{leftmargin=1.0em, itemsep=0.05em, topsep=0.08em, parsep=0pt}
+\titleformat{\section}{\normalsize\bfseries\uppercase}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{0.4em}{0.15em}
+\setstretch{0.98}
+
+\newcommand{\Name}{First Last}
+\newcommand{\Email}{email@example.com}
+\newcommand{\Phone}{+1-555-0100}
+\newcommand{\Location}{City, Country}
+\newcommand{\LinkedIn}{https://linkedin.com/in/username}
+\newcommand{\GitHub}{https://github.com/username}
+\newcommand{\Portfolio}{https://example.com}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries \Name}\\[0.15em]
+  {\small \Location \quad|\quad \href{mailto:\Email}{\Email} \quad|\quad \Phone}\\[0.1em]
+  {\small \href{\GitHub}{GitHub} \quad|\quad \href{\LinkedIn}{LinkedIn} \quad|\quad \href{\Portfolio}{Portfolio}}
+\end{center}
+
+\section{Summary}
+% Two lines maximum.
+
+\section{Experience}
+\subsection{Title --- Company \hfill {\normalsize\mdseries\textit{YYYY-MM -- YYYY-MM}}}
+\begin{itemize}
+  \item Action, scope, tools, metric.
+  \item Action, scope, tools, metric.
+\end{itemize}
+
+\section{Projects}
+\subsection{Project Name \hfill {\normalsize\mdseries\href{https://github.com/org/repo}{Repo}}}
+\begin{itemize}
+  \item Purpose, role, stack, outcome.
+\end{itemize}
+
+\section{Education}
+\textbf{Degree, Field}, School \hfill YYYY-MM -- YYYY-MM
+
+\section{Skills}
+\textbf{Languages:} \ldots\\
+\textbf{Frameworks:} \ldots\\
+\textbf{Tools:} \ldots
+
+\end{document}

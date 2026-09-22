@@ -1,5 +1,4 @@
-% Alias of formats/classic.tex. Prefer assets/formats/<name>.tex (see references/formats.md).
-% Compile with output-directory pointing at resume-build/output/
+% format: classic — general 2-page ATS resume
 \documentclass[10pt,letterpaper]{article}
 
 \usepackage[margin=0.55in]{geometry}
@@ -9,7 +8,6 @@
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{setspace}
-\usepackage{parskip}
 
 \pagestyle{empty}
 \setlist[itemize]{leftmargin=1.1em, itemsep=0.12em, topsep=0.15em, parsep=0pt}
@@ -17,7 +15,6 @@
 \titlespacing*{\section}{0pt}{0.65em}{0.35em}
 \setstretch{1.05}
 
-% ---- Fill from memory / skill; keep links real ----
 \newcommand{\Name}{First Last}
 \newcommand{\Email}{email@example.com}
 \newcommand{\Phone}{+1-555-0100}
@@ -39,18 +36,17 @@
 \end{center}
 
 \section{Summary}
-% One short human sentence defining target role + strongest proof. No AI filler.
+% One short sentence: target role plus strongest proof.
 
 \section{Experience}
 \subsection{Title --- Company}
-\textit{City \quad|\quad YYYY-MM -- YYYY-MM (or Present)}
+\textit{City \quad|\quad YYYY-MM -- YYYY-MM}
 \begin{itemize}
-  \item Action + scope + tools + metric.
-  \item Action + scope + tools + metric.
+  \item Action, scope, tools, metric.
 \end{itemize}
 
 \section{Projects}
-\subsection{Project Name \quad \href{https://github.com/org/repo}{Repo} \quad \href{https://demo.example}{Demo}}
+\subsection{Project Name \quad \href{https://github.com/org/repo}{Repo}}
 \begin{itemize}
   \item What it does, your role, stack, outcome.
 \end{itemize}
@@ -58,14 +54,11 @@
 \section{Education}
 \subsection{Degree, Field --- School}
 \textit{YYYY-MM -- YYYY-MM}
-\begin{itemize}
-  \item Relevant coursework or honors (optional).
-\end{itemize}
 
 \section{Skills}
 \textbf{Languages:} \ldots\\
 \textbf{Frameworks:} \ldots\\
-\textbf{Tools / Cloud:} \ldots
+\textbf{Tools:} \ldots
 
 \section{Awards}
 \begin{itemize}

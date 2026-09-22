@@ -1,5 +1,4 @@
-% Alias of formats/classic.tex. Prefer assets/formats/<name>.tex (see references/formats.md).
-% Compile with output-directory pointing at resume-build/output/
+% format: projects-first — builds and repos lead, then jobs
 \documentclass[10pt,letterpaper]{article}
 
 \usepackage[margin=0.55in]{geometry}
@@ -9,15 +8,13 @@
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{setspace}
-\usepackage{parskip}
 
 \pagestyle{empty}
 \setlist[itemize]{leftmargin=1.1em, itemsep=0.12em, topsep=0.15em, parsep=0pt}
 \titleformat{\section}{\large\bfseries\uppercase}{}{0em}{}[\titlerule]
-\titlespacing*{\section}{0pt}{0.65em}{0.35em}
+\titlespacing*{\section}{0pt}{0.6em}{0.3em}
 \setstretch{1.05}
 
-% ---- Fill from memory / skill; keep links real ----
 \newcommand{\Name}{First Last}
 \newcommand{\Email}{email@example.com}
 \newcommand{\Phone}{+1-555-0100}
@@ -29,43 +26,33 @@
 \begin{document}
 
 \begin{center}
-  {\LARGE\bfseries \Name}\\[0.35em]
-  \Location \quad|\quad
-  \href{mailto:\Email}{\Email} \quad|\quad
-  \Phone\\[0.2em]
-  \href{\GitHub}{GitHub} \quad|\quad
-  \href{\LinkedIn}{LinkedIn} \quad|\quad
-  \href{\Portfolio}{Portfolio}
+  {\LARGE\bfseries \Name}\\[0.3em]
+  \href{mailto:\Email}{\Email} \quad|\quad \Phone \quad|\quad \Location\\[0.15em]
+  \href{\GitHub}{GitHub} \quad|\quad \href{\LinkedIn}{LinkedIn} \quad|\quad \href{\Portfolio}{Portfolio}
 \end{center}
-
-\section{Summary}
-% One short human sentence defining target role + strongest proof. No AI filler.
-
-\section{Experience}
-\subsection{Title --- Company}
-\textit{City \quad|\quad YYYY-MM -- YYYY-MM (or Present)}
-\begin{itemize}
-  \item Action + scope + tools + metric.
-  \item Action + scope + tools + metric.
-\end{itemize}
 
 \section{Projects}
 \subsection{Project Name \quad \href{https://github.com/org/repo}{Repo} \quad \href{https://demo.example}{Demo}}
+\textit{Your role \quad|\quad stack}
 \begin{itemize}
-  \item What it does, your role, stack, outcome.
+  \item What it does, what you owned, metric or user outcome.
 \end{itemize}
 
-\section{Education}
-\subsection{Degree, Field --- School}
-\textit{YYYY-MM -- YYYY-MM}
+\section{Experience}
+\subsection{Title --- Company}
+\textit{City \quad|\quad YYYY-MM -- YYYY-MM}
 \begin{itemize}
-  \item Relevant coursework or honors (optional).
+  \item Action, scope, tools, metric.
 \end{itemize}
 
 \section{Skills}
 \textbf{Languages:} \ldots\\
 \textbf{Frameworks:} \ldots\\
-\textbf{Tools / Cloud:} \ldots
+\textbf{Tools:} \ldots
+
+\section{Education}
+\subsection{Degree, Field --- School}
+\textit{YYYY-MM -- YYYY-MM}
 
 \section{Awards}
 \begin{itemize}

@@ -100,9 +100,17 @@ Update later by saying **update my resume memory**, **save my profile**, or **re
 
 ### 2. Template
 
-The agent asks for a template: a file path, a pasted layout, or **default**.
+The agent asks you to pick a built-in format, or to paste your own. All built-ins are single-column LaTeX so applicant-tracking systems can read them. Say the name, or say **default** for classic.
 
-A provided template is followed (section order, density, fonts, margins). Otherwise it uses `.agents/skills/best-fit-resume/assets/default-2page.tex`.
+| Say this | What you get |
+|---|---|
+| classic | Summary, experience, projects, education, skills, awards. The general layout. |
+| compact | Smaller type and tighter spacing when you have many roles. |
+| skills-first | Skills directly under your name, for tool-heavy job descriptions. |
+| academic | Education, research, and publications first. |
+| projects-first | Projects and repos first, then jobs. Fits students and builders. |
+
+Files live in `.agents/skills/best-fit-resume/assets/formats/`. A pasted template is followed instead: section order, density, fonts, and margins. Every section you filled still appears.
 
 ### 3. Job description, research, three loops
 

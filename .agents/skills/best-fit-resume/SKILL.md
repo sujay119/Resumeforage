@@ -35,7 +35,8 @@ Build a tailored 2-page LaTeX resume, score it against a JD, iterate for fit, hu
 | Build PDF | `resume-build/output/` (compile folder; never mix with `.tex`) |
 | Saved PDFs | `resume-archive/pdf/` (finished copies only) |
 | Excel tracker | `resume-tracker/resumes.xlsx` via `resume-tracker/track_resume.py` |
-| Default template | `.agents/skills/best-fit-resume/assets/default-2page.tex` |
+| Built-in formats | `.agents/skills/best-fit-resume/assets/formats/` (`classic`, `compact`, `skills-first`, `academic`, `projects-first`) |
+| Format index | `.agents/skills/best-fit-resume/references/formats.md` |
 | Hiring scorer | `score.py` |
 | Role rubrics | `roles/<role>/` (`role.json`, `criteria.jinja`, `system_message.jinja`) |
 | Extraction prompts | `prompts/templates/*.jinja` |
@@ -48,6 +49,7 @@ Read references only when needed:
 - [hiring-agent-integration.md](references/hiring-agent-integration.md) — `score.py` loop
 - [memory.md](references/memory.md) — load / merge / update memory
 - [tracking.md](references/tracking.md) — archive PDF + Excel Yes/No log
+- [formats.md](references/formats.md) — built-in layout names and when to use each
 
 ---
 
@@ -64,9 +66,10 @@ Do **not** reorder. Do **not** drip questions later except for the explicit Step
 
 ### Step 2 — Template
 
-1. Ask which resume template/format they want (path, paste, or "default").
-2. If provided: analyze structure (sections, order, density, fonts, margins) and follow it.
-3. If not: use `.agents/skills/best-fit-resume/assets/default-2page.tex`.
+1. Ask which format they want. Offer the built-in names in one line: **classic**, **compact**, **skills-first**, **academic**, **projects-first**. Also accept a path or a pasted template. Details: [formats.md](references/formats.md).
+2. If they name a built-in: copy that file from `.agents/skills/best-fit-resume/assets/formats/<name>.tex` and follow its section order, type size, and spacing. Keep every filled profile section even if you move it.
+3. If they paste or point at their own template: analyze structure (sections, order, density, fonts, margins) and follow it.
+4. If they say default, or do not choose: use `assets/formats/classic.tex`.
 
 ### Step 3 — Job description + research + 3-loop fit cycle
 
