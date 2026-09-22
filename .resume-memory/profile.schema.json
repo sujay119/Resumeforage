@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "resume-memory-profile",
+  "title": "ResumeMemoryProfile",
+  "type": "object",
+  "required": ["version", "basics"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "target_roles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "basics": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "summary": { "type": "string" },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "url"],
+            "properties": {
+              "label": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "work": { "type": "array", "items": { "type": "object" } },
+    "projects": { "type": "array", "items": { "type": "object" } },
+    "education": { "type": "array", "items": { "type": "object" } },
+    "skills": { "type": "object" },
+    "awards": { "type": "array", "items": { "type": "object" } },
+    "achievements": { "type": "array", "items": { "type": "string" } },
+    "constraints": { "type": "object" },
+    "preferences": {
+      "type": "object",
+      "properties": {
+        "pages": { "type": "integer" },
+        "tone": { "type": "string" },
+        "filename_slug": { "type": "string" },
+        "template_path": { "type": "string" }
+      }
+    }
+  }
+}

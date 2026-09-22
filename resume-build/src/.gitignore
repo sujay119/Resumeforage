@@ -1,0 +1,4 @@
+# Keep folder; ignore local tex drafts if desired — track templates only via skill assets
+*
+!.gitkeep
+!.gitignore
