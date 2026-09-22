@@ -1,6 +1,6 @@
-# Upfront intake questions (Step 1)
+# Profile questions (Step 1)
 
-Ask **all** of these in the **first** skill message (skip only fields already complete in `.resume-memory/profile.json`; confirm those instead). Do not drip later.
+Ask these **one at a time**, in this order. Skip a question only when that field is already filled in `.resume-memory/profile.json`. Save the answer before asking the next one. Do not send the list in one message.
 
 ## Identity and contact
 

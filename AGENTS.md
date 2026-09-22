@@ -1,5 +1,9 @@
 # Agent instructions (hiring-agent)
 
+## Session start
+
+On the first message of a chat in this repo, load `.resume-memory/profile.json`. If any profile field is empty, start immediately: **Let's create your profile.** Ask **one** missing question, save the answer, then ask the next. Do not ask every question in one message. Follow `.agents/skills/best-fit-resume/SKILL.md`.
+
 ## Best-fit resume skill
 
 When the user wants a tailored/optimized resume, LaTeX→PDF resume, JD keyword fit, ATS score loop, or to update resume memory, load and follow:

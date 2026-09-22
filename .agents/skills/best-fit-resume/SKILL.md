@@ -53,16 +53,28 @@ Read references only when needed:
 
 ---
 
+## Start on open
+
+When a chat starts in this repo, do this before any other help:
+
+1. Load `.resume-memory/profile.json` if it exists.
+2. If any field in [questions.md](references/questions.md) is empty, the **first reply** starts the profile. Do not wait to be asked. Open with one line: **Let's create your profile.** If some fields are already saved, say **Continuing your profile.**
+3. Ask **exactly one** missing question. Stop. Wait for the answer.
+4. Write that answer into `.resume-memory/profile.json` immediately, then ask the next missing question. One question per message. Never drop a filled field.
+5. When every field is filled, say the profile is saved, show a short summary, and only then go to Step 2.
+
+Do not list the remaining questions. Do not ask the template or the job description until the profile is complete.
+
 ## Strict conversation order
 
-Do **not** reorder. Do **not** drip questions later except for the explicit Step 4 additions pass.
+Do **not** reorder the steps. During Step 1, ask one question at a time. After the profile is complete, do not reopen intake except for the Step 4 additions pass or an explicit memory update.
 
-### Step 1 — Intake only (first message)
+### Step 1 — Profile, one question at a time
 
 1. Load `.resume-memory/profile.json` if it exists (see [memory.md](references/memory.md)).
-2. If memory is complete: confirm the profile in a short summary and ask **only** what is missing or what they want to change.
-3. If memory is missing/incomplete: ask **ALL** questions from [questions.md](references/questions.md) in **one** message. Wait for answers before Step 2.
-4. After answers: merge into `.resume-memory/profile.json`. **Never drop** previously filled fields.
+2. Walk [questions.md](references/questions.md) in order. Skip fields that are already filled.
+3. Each turn: one question, wait, save, next question.
+4. If memory is already complete at session start: summarize it and ask whether they want to change anything or build a resume. Do not re-ask filled fields.
 
 ### Step 2 — Template
 

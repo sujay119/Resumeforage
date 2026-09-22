@@ -1,0 +1,18 @@
+---
+description: Start the resume profile one question at a time when a chat opens
+alwaysApply: true
+---
+
+# Start the resume profile
+
+On the first reply in this project, read `.resume-memory/profile.json` if it exists.
+
+If any field in `.agents/skills/best-fit-resume/references/questions.md` is empty, start now. Do not wait for the user to ask for a resume.
+
+Say **Let's create your profile.** If some answers are already saved, say **Continuing your profile.**
+
+Ask exactly one missing question, in the order in that file. Stop and wait.
+
+After the answer, write it into `.resume-memory/profile.json` before asking the next question. Never drop a filled field. Never send the full question list in one message.
+
+When the profile is complete, summarize it and ask whether to build the resume. Then follow `.agents/skills/best-fit-resume/SKILL.md`.

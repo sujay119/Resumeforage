@@ -9,9 +9,9 @@ Persistent across sessions. Load **before** asking questions.
 
 ## Load
 
-1. If `.resume-memory/profile.json` exists, read it.
-2. Summarize non-empty fields to the user.
-3. Ask only for missing fields or requested changes (still in Step 1 — one message).
+1. If `.resume-memory/profile.json` exists, read it before the first question.
+2. Save after **each** answer. Do not batch the whole profile into one write at the end.
+3. Ask the next empty field only. If the user is updating memory, change just the fields they name.
 
 ## Merge rules
 

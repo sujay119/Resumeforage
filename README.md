@@ -2,11 +2,17 @@
 
 Resume Forage builds a 2-page, job-specific resume in LaTeX, scores it until it is the best honest fit for the job description, compiles a PDF, saves that PDF in its own folder, and logs the result in an Excel sheet.
 
-Open this repository as the project folder in an agent (Cursor, OpenCode, Antigravity, Claude Code, Codex, or Hermes) and say:
+Open this repository as the project folder in an agent (Cursor, OpenCode, Antigravity, Claude Code, Codex, or Hermes) and start a chat.
 
-**build my best-fit resume**
+If your profile is not finished, the agent starts on its own:
 
-The agent follows `.agents/skills/best-fit-resume/SKILL.md`. Adapters in `.cursor/skills/`, `.claude/skills/`, and `.opencode/skills/` point at that same file, so every harness runs one workflow.
+**Let's create your profile.**
+
+It asks **one question**, waits for your answer, saves it, then asks the next. It does not send the whole list at once. When the profile is complete, it asks which built-in format you want and then takes the job description.
+
+You can also say **build my best-fit resume** or **update my resume memory**.
+
+The agent follows `.agents/skills/best-fit-resume/SKILL.md`. Adapters in `.cursor/skills/`, `.claude/skills/`, and `.opencode/skills/` point at that same file, so every harness runs one workflow. Cursor also loads `.cursor/rules/start-profile.mdc` on every chat.
 
 ## What you get
 
@@ -72,13 +78,11 @@ Open the cloned folder as the workspace. Then use any of these:
 
 ## The run, in order
 
-The agent does not skip ahead or ask profile questions again later.
+The agent finishes the profile before it asks for a template or a job description. It does not repeat a question you already answered.
 
-### 1. Profile, once
+### 1. Profile, one question at a time
 
-If `.resume-memory/profile.json` is already complete, the agent summarizes it and asks only what is missing or what you want to change.
-
-If it is missing, the agent asks all of this in one message:
+Opening a chat starts this step when `.resume-memory/profile.json` is missing or incomplete. The agent asks the next empty item only, saves your answer, then continues. The questions, in order, are:
 
 - Full name, email, phone, location, target role
 - GitHub, LinkedIn, portfolio, and any other links (label plus URL)
